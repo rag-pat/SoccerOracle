@@ -279,16 +279,21 @@ def latest_H2H(team_1, team_2, league):
     return match_stats
 
 def recent_matches(team_1, team_2, league):
-    """Fetch recent matches for two teams in a given league."""
-    team_1_id = get_team_id(team_1, league)
-    team_2_id = get_team_id(team_2, league)
+   """Fetch recent matches for two teams in a given league."""
+   team_1_id = get_team_id(team_1, league)
+   team_2_id = get_team_id(team_2, league)
+   league_id = get_league_id(league)
 
-    if not team_1_id or not team_2_id:
-        print(f"Error: Could not find team IDs for '{team_1}' or '{team_2}' in '{league}'")
-        return None
-    
-    url = f"{BASE_URL}/fixtures"
+   if not team_1_id or not team_2_id or not league_id:
+       print(f"Error: Could not find team or league IDs")
+       return None
+   
+   url = f"{BASE_URL}/fixtures"
+   
+   pass
 
+
+recent_matches("Manchester United", "Chelsea", "Premier League")
 
 print(recent_matches("Manchester United", "Chelsea", "Premier League"))
 
