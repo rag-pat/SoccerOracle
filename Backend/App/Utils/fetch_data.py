@@ -84,6 +84,38 @@ def get_team_id(team_name, league_name, season=2023):
         print(f"Error fetching teams: {response.status_code}, {response.text}")
         return None
 
+def get_player_id(player_name, team_name, league_name, season=2023):
+    """Fetch player ID using team squad information."""
+    team_id = get_team_id(team_name, league_name, season)
+    
+    if not team_id:
+        print(f"Error: Could not find team ID for '{team_name}'")
+        return None
+        
+    url = f"{BASE_URL}/players/squads"
+    params = {"team": team_id}
+    
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code != 200:
+        print(f"Error fetching squad data: {response.status_code}")
+        return None
+        
+    data = response.json()
+    players = data["response"][0]["players"]
+    
+    # Find closest matching player name
+    player_names = [p["name"] for p in players]
+    best_match, score = process.extractOne(player_name, player_names)
+    if score < 60:  # Threshold for matching
+        print(f"No close match found for player '{player_name}'")
+        return None
+    
+    print(f"Player matched: {best_match}")
+    player_data = next(p for p in players if p["name"] == best_match)
+    return player_data["id"], best_match, player_data["position"]
+
+
+
 def league_standings():
     """Fetch league standings for a specific league and season."""
     url = f"{BASE_URL}/standings"
@@ -279,22 +311,117 @@ def latest_H2H(team_1, team_2, league):
     return match_stats
 
 def recent_matches(team_1, team_2, league):
-   """Fetch recent matches for two teams in a given league."""
-   team_1_id = get_team_id(team_1, league)
-   team_2_id = get_team_id(team_2, league)
-   league_id = get_league_id(league)
+   pass
 
-   if not team_1_id or not team_2_id or not league_id:
-       print(f"Error: Could not find team or league IDs")
-       return None
-   
-   url = f"{BASE_URL}/fixtures"
+def player_season_stats(player_name, team_name, league_name, season=2023):
+    """Fetch season statistics for a specific player."""
+    league_id = get_league_id(league_name)
+    player_info = get_player_id(player_name, team_name, league_name, season)
+    
+    if not league_id or not player_info:
+        return None
+        
+    player_id, player_name, position = player_info
+    
+    # Get player statistics
+    url = f"{BASE_URL}/players"
+    params = {
+        "id": player_id,
+        "season": season,
+        "league": league_id
+    }
+    
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code != 200:
+        print(f"Error fetching player stats: {response.status_code}")
+        return None
+        
+    data = response.json()
+    if not data["response"]:
+        print(f"No statistics found for player {player_name}")
+        return None
+        
+    stats = data["response"][0]["statistics"][0]
+    
+    # Format statistics based on position
+    if position == "Goalkeeper":
+        return {
+            "name": player_name,
+            "position": position,
+            "games": {
+                "appearances": stats["games"]["appearences"],
+                "minutes_played": stats["games"]["minutes"]
+            },
+            "goals": {
+                "conceded": stats["goals"]["conceded"],
+                "saves": stats["goals"]["saves"]
+            },
+            "passes": {
+                "total": stats["passes"]["total"],
+                "key": stats["passes"]["key"],
+                "accuracy": stats["passes"]["accuracy"]
+            },
+            "tackles": {
+                "total": stats["tackles"]["total"],
+                "blocks": stats["tackles"]["blocks"],
+                "interceptions": stats["tackles"]["interceptions"]
+            },
+            "duels": {
+                "total": stats["duels"]["total"],
+                "won": stats["duels"]["won"]
+            },
+            "dribbles": {
+                "attempts": stats["dribbles"]["attempts"],
+                "success": stats["dribbles"]["success"]
+            },
+            "fouls": {
+                "drawn": stats["fouls"]["drawn"],
+                "committed": stats["fouls"]["committed"]
+            },
+            "cards": {
+                "yellow": stats["cards"]["yellow"],
+                "red": stats["cards"]["red"]
+            }
+        }
+    else:
+        return {
+            "name": player_name,
+            "position": position,
+            "games": {
+                "appearances": stats["games"]["appearences"],
+                "minutes_played": stats["games"]["minutes"]
+            },
+            "goals": {
+                "total": stats["goals"]["total"],
+                "assists": stats["goals"]["assists"]
+            },
+            "passes": {
+                "total": stats["passes"]["total"],
+                "key": stats["passes"]["key"],
+                "accuracy": stats["passes"]["accuracy"]
+            },
+            "tackles": {
+                "total": stats["tackles"]["total"],
+                "blocks": stats["tackles"]["blocks"],
+                "interceptions": stats["tackles"]["interceptions"]
+            },
+            "duels": {
+                "total": stats["duels"]["total"],
+                "won": stats["duels"]["won"]
+            },
+            "dribbles": {
+                "attempts": stats["dribbles"]["attempts"],
+                "success": stats["dribbles"]["success"]
+            },
+            "fouls": {
+                "drawn": stats["fouls"]["drawn"],
+                "committed": stats["fouls"]["committed"]
+            },
+            "cards": {
+                "yellow": stats["cards"]["yellow"],
+                "red": stats["cards"]["red"]
+            }
+        }
 
-def player_season_stats(player_name, league_name, season=2023):
+def player_recent_matches(player_name, team_name, league_name, season=2023, limit=3):
     pass
-
-def player_recent_matches(player_name, league_name, season=2023, limit=3):
-    pass
-
-#git check
-print()
