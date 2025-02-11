@@ -1,4 +1,5 @@
 import requests
+from fuzzywuzzy import process, fuzz  # Install with: pip install fuzzywuzzy python-Levenshtein
 
 API_KEY = "46ee824f034e65c62e6efc27bc34c0c1"
 BASE_URL = "https://v3.football.api-sports.io"
@@ -40,8 +41,11 @@ def get_league_id(league_name):
         leagues = data.get("response", [])
         
         if leagues:
-            league_id = leagues[0]["league"]["id"]
-            return league_id
+            # Get all league names and find best match
+            choices = [l["league"]["name"] for l in leagues]
+            best_match, _ = process.extractOne(league_name, choices)
+            print(f"League matched: {best_match}")
+            return next(l["league"]["id"] for l in leagues if l["league"]["name"] == best_match)
         else:
             print(f"No league found with name '{league_name}'")
             return None
@@ -49,19 +53,14 @@ def get_league_id(league_name):
         print(f"Error fetching leagues: {response.status_code}, {response.text}")
         return None
 
-
 def get_team_id(team_name, league_name, season=2023):
-    """
-    Fetch team ID for a given team name.
-    
-    - Uses `get_league_id()` to find the league ID.
-    - Searches for the team inside that league.
-    """
+    """Fetch team ID for a given team name."""
     league_id = get_league_id(league_name)
-    url = f"{BASE_URL}/teams"
+    if not league_id:
+        return None
 
+    url = f"{BASE_URL}/teams"
     params = {
-        "name": team_name,
         "league": league_id,
         "season": season
     }
@@ -73,16 +72,17 @@ def get_team_id(team_name, league_name, season=2023):
         teams = data.get("response", [])
         
         if teams:
-            team_id = teams[0]["team"]["id"]
-            return team_id
+            # Get all team names and find best match
+            choices = [t["team"]["name"] for t in teams]
+            best_match, _ = process.extractOne(team_name, choices)
+            print(f"Team matched: {best_match}")
+            return next(t["team"]["id"] for t in teams if t["team"]["name"] == best_match)
         else:
-            print(f"No team found with name '{team_name}' in league '{league_name}'")
+            print(f"No teams found in league '{league_name}'")
             return None
     else:
         print(f"Error fetching teams: {response.status_code}, {response.text}")
         return None
-
-
 
 def league_standings():
     """Fetch league standings for a specific league and season."""
@@ -289,16 +289,9 @@ def recent_matches(team_1, team_2, league):
        return None
    
    url = f"{BASE_URL}/fixtures"
-   
-   pass
 
-
-recent_matches("Manchester United", "Chelsea", "Premier League")
-
-print(recent_matches("Manchester United", "Chelsea", "Premier League"))
-
-def player_season_stats(player_name):
+def player_season_stats(player_name, league_name, season=2023):
     pass
 
-def player_recent_matches(player_name):
+def player_recent_matches(player_name, league_name, season=2023, limit=3):
     pass
