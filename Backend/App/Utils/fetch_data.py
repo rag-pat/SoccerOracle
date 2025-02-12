@@ -1,5 +1,5 @@
 import requests
-from fuzzywuzzy import process, fuzz  # Install with: pip install fuzzywuzzy python-Levenshtein
+from fuzzywuzzy import process
 
 API_KEY = "46ee824f034e65c62e6efc27bc34c0c1"
 BASE_URL = "https://v3.football.api-sports.io"
@@ -348,6 +348,7 @@ def player_season_stats(player_name, team_name, league_name, season=2023):
         return {
             "name": player_name,
             "position": position,
+            "rating": float(f"{float(stats['games'].get('rating', 0)):.2f}"),
             "games": {
                 "appearances": stats["games"]["appearences"],
                 "minutes_played": stats["games"]["minutes"]
@@ -387,6 +388,7 @@ def player_season_stats(player_name, team_name, league_name, season=2023):
         return {
             "name": player_name,
             "position": position,
+            "rating": float(f"{float(stats['games'].get('rating', 0)):.2f}"),
             "games": {
                 "appearances": stats["games"]["appearences"],
                 "minutes_played": stats["games"]["minutes"]
@@ -422,6 +424,8 @@ def player_season_stats(player_name, team_name, league_name, season=2023):
                 "red": stats["cards"]["red"]
             }
         }
+
+print(player_season_stats("Erling Haaland", "Manchester City", "Premier League", 2023))
 
 def player_recent_matches(player_name, team_name, league_name, season=2023, limit=3):
     pass
