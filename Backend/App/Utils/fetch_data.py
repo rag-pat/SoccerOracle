@@ -539,3 +539,68 @@ def player_season_stats(player_name, team_name, league_name, season=2023):
             }
         }
 
+def player_recent_matches(player_name, team_name, league_name, season=2023):
+    """
+    Get statistics for a player's last three games.
+    
+    Args:
+        player_name (str): Name of the player
+        league_name (str): Name of the league
+        season (int): Season year (default: 2023)
+    
+    Returns:
+        dict: Player statistics for last three games or None if error occurs
+    """
+    # First get league ID and player information
+    league_id = get_league_id(league_name)
+    if not league_id:
+        print(f"Error: Could not find league ID for '{league_name}'")
+        return None
+    
+    player_id = get_player_id(player_name, team_name, league_name, season)[0]
+
+    team_id = get_team_id(team_name, league_name, season)
+
+    def get_team_matches(team_id, team_name):
+        url = f"{BASE_URL}/fixtures"
+        params = {
+            "team": team_id,
+            "season": 2023,
+            "status": "FT"  # Only finished matches
+        }
+
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code != 200:
+            print(f"Error fetching matches for {team_name}: {response.status_code}")
+            return []
+
+        matches_data = response.json()
+        matches = matches_data.get("response", [])
+        
+        if not matches:
+            print(f"No matches found for {team_name} in the 2023 season")
+            return []
+            
+        # Sort matches by date (newest first) and take last 3
+        matches.sort(key=lambda x: x["fixture"]["date"], reverse=True)
+        matches = matches[:3]
+        
+        # Return just the fixture IDs
+        return [match["fixture"]["id"] for match in matches]
+    
+    team_matches = get_team_matches(team_id, team_name)
+
+    player_stats = []
+
+    for match_id in team_matches:
+        stats_url = f"{BASE_URL}/fixtures/players"
+        stats_params = {"fixture": match_id}
+
+        stats_response = requests.get(stats_url, headers=headers, params=stats_params)
+        stats_data = stats_response.json()
+
+        
+
+    return stats_data
+
+print(player_recent_matches("Erling Haaland", "Manchester City", "Premier League"))
