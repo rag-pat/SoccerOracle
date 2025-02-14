@@ -549,7 +549,7 @@ def player_recent_matches(player_name, team_name, league_name, season=2023):
         season (int): Season year (default: 2023)
     
     Returns:
-        dict: Player statistics for last three games or None if error occurs
+        list: List of player statistics for last three games or None if error occurs
     """
     # First get league ID and player information
     league_id = get_league_id(league_name)
@@ -557,15 +557,19 @@ def player_recent_matches(player_name, team_name, league_name, season=2023):
         print(f"Error: Could not find league ID for '{league_name}'")
         return None
     
-    player_id = get_player_id(player_name, team_name, league_name, season)[0]
-
+    player_info = get_player_id(player_name, team_name, league_name, season)
+    if not player_info:
+        print(f"Error: Could not find player ID for '{player_name}'")
+        return None
+        
+    player_id, player_name, position = player_info
     team_id = get_team_id(team_name, league_name, season)
 
     def get_team_matches(team_id, team_name):
         url = f"{BASE_URL}/fixtures"
         params = {
             "team": team_id,
-            "season": 2023,
+            "season": season,
             "status": "FT"  # Only finished matches
         }
 
@@ -578,18 +582,16 @@ def player_recent_matches(player_name, team_name, league_name, season=2023):
         matches = matches_data.get("response", [])
         
         if not matches:
-            print(f"No matches found for {team_name} in the 2023 season")
+            print(f"No matches found for {team_name} in the {season} season")
             return []
             
         # Sort matches by date (newest first) and take last 3
         matches.sort(key=lambda x: x["fixture"]["date"], reverse=True)
         matches = matches[:3]
         
-        # Return just the fixture IDs
         return [match["fixture"]["id"] for match in matches]
     
     team_matches = get_team_matches(team_id, team_name)
-
     player_stats = []
 
     for match_id in team_matches:
@@ -597,10 +599,94 @@ def player_recent_matches(player_name, team_name, league_name, season=2023):
         stats_params = {"fixture": match_id}
 
         stats_response = requests.get(stats_url, headers=headers, params=stats_params)
+        if stats_response.status_code != 200:
+            print(f"Error fetching match stats: {stats_response.status_code}")
+            continue
+
         stats_data = stats_response.json()
-
         
+        # Find player stats in the response
+        for team in stats_data.get("response", []):
+            for player in team.get("players", []):
+                if player["player"]["id"] == player_id:
+                    stats = player["statistics"][0]
+                    
+                    if position == "Goalkeeper":
+                        match_stats = {
+                            "games": {
+                                "appearances": 1 if stats["games"]["minutes"] > 0 else 0,
+                                "minutes_played": stats["games"]["minutes"]
+                            },
+                            "goals": {
+                                "conceded": stats["goals"].get("conceded", 0),
+                                "saves": stats["goals"].get("saves", 0)
+                            },
+                            "passes": {
+                                "total": stats["passes"].get("total", 0),
+                                "key": stats["passes"].get("key", 0),
+                                "accuracy": stats["passes"].get("accuracy", 0)
+                            },
+                            "tackles": {
+                                "total": stats["tackles"].get("total", 0),
+                                "blocks": stats["tackles"].get("blocks", 0),
+                                "interceptions": stats["tackles"].get("interceptions", 0)
+                            },
+                            "duels": {
+                                "total": stats["duels"].get("total", 0),
+                                "won": stats["duels"].get("won", 0)
+                            },
+                            "dribbles": {
+                                "attempts": stats["dribbles"].get("attempts", 0),
+                                "success": stats["dribbles"].get("success", 0)
+                            },
+                            "fouls": {
+                                "drawn": stats["fouls"].get("drawn", 0),
+                                "committed": stats["fouls"].get("committed", 0)
+                            },
+                            "cards": {
+                                "yellow": stats["cards"].get("yellow", 0),
+                                "red": stats["cards"].get("red", 0)
+                            }
+                        }
+                    else:
+                        match_stats = {
+                            "games": {
+                                "appearances": 1 if stats["games"]["minutes"] > 0 else 0,
+                                "minutes_played": stats["games"]["minutes"]
+                            },
+                            "goals": {
+                                "total": stats["goals"].get("total", 0),
+                                "assists": stats["goals"].get("assists", 0)
+                            },
+                            "passes": {
+                                "total": stats["passes"].get("total", 0),
+                                "key": stats["passes"].get("key", 0),
+                                "accuracy": stats["passes"].get("accuracy", 0)
+                            },
+                            "tackles": {
+                                "total": stats["tackles"].get("total", 0),
+                                "blocks": stats["tackles"].get("blocks", 0),
+                                "interceptions": stats["tackles"].get("interceptions", 0)
+                            },
+                            "duels": {
+                                "total": stats["duels"].get("total", 0),
+                                "won": stats["duels"].get("won", 0)
+                            },
+                            "dribbles": {
+                                "attempts": stats["dribbles"].get("attempts", 0),
+                                "success": stats["dribbles"].get("success", 0)
+                            },
+                            "fouls": {
+                                "drawn": stats["fouls"].get("drawn", 0),
+                                "committed": stats["fouls"].get("committed", 0)
+                            },
+                            "cards": {
+                                "yellow": stats["cards"].get("yellow", 0),
+                                "red": stats["cards"].get("red", 0)
+                            }
+                        }
+                    player_stats.append(match_stats)
 
-    return stats_data
+    return player_stats
 
-print(player_recent_matches("Erling Haaland", "Manchester City", "Premier League"))
+print(player_recent_matches("Harry Kane", "Bayern Munich", "Bundesliga"))
