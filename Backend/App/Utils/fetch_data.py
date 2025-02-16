@@ -688,5 +688,3 @@ def player_recent_matches(player_name, team_name, league_name, season=2023):
                     player_stats.append(match_stats)
 
     return player_stats
-
-print(player_recent_matches("Harry Kane", "Bayern Munich", "Bundesliga"))
