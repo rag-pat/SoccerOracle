@@ -1,11 +1,11 @@
 import requests
 from fuzzywuzzy import process
+from creds import api_key
 
-API_KEY = "46ee824f034e65c62e6efc27bc34c0c1"
 BASE_URL = "https://v3.football.api-sports.io"
 
 headers = {
-    "x-rapidapi-key": API_KEY,
+    "x-rapidapi-key": api_key,
     "x-rapidapi-host": "v3.football.api-sports.io"
 }
 
@@ -604,7 +604,7 @@ def player_recent_matches(player_name, team_name, league_name, season=2023):
             continue
 
         stats_data = stats_response.json()
-        
+        print(stats_data)
         # Find player stats in the response
         for team in stats_data.get("response", []):
             for player in team.get("players", []):
