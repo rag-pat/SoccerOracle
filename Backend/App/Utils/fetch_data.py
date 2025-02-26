@@ -205,7 +205,7 @@ def latest_H2H(team_1, team_2, league):
 
     return match_stats
 
-def recent_matches(team_1, team_2, league):
+def recent_matches(team_1, team_2, league, number_matches):
     """Fetch last 3 matches for each team with detailed statistics."""
     team_1_id = get_team_id(team_1, league)
     team_2_id = get_team_id(team_2, league)
@@ -236,7 +236,7 @@ def recent_matches(team_1, team_2, league):
             
         # Sort matches by date (newest first) and take last 3
         matches.sort(key=lambda x: x["fixture"]["date"], reverse=True)
-        matches = matches[:3]
+        matches = matches[:number_matches]
         team_matches = []
 
         for match in matches:
@@ -434,7 +434,7 @@ def player_season_stats(player_name, team_name, league_name, season=2023):
             }
         }
 
-def player_recent_matches(player_name, team_name, league_name, season=2023):
+def player_recent_matches(player_name, team_name, league_name, number_matches, season=2023):
     """
     Get statistics for a player's last three games.
     
@@ -480,9 +480,8 @@ def player_recent_matches(player_name, team_name, league_name, season=2023):
             print(f"No matches found for {team_name} in the {season} season")
             return []
             
-        # Sort matches by date (newest first) and take last 3
         matches.sort(key=lambda x: x["fixture"]["date"], reverse=True)
-        matches = matches[:3]
+        matches = matches[:number_matches]
         
         return [match["fixture"]["id"] for match in matches]
     
