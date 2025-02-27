@@ -51,10 +51,6 @@ def league_standings():
                     }
                     for team in standings[:20]
                 ]
-            else:
-                print(f"No standings found for league '{league_name}'")
-        else:
-            print(f"Error fetching league data: {response.status_code}, {response.text}")
 
     return all_leagues
 
@@ -65,8 +61,7 @@ def H2H_stats(team_1, team_2, league):
     team_2_id = get_team_id(team_2, league)
 
     if not team_1_id or not team_2_id:
-        print(f"Error: Could not find team IDs for '{team_1}' or '{team_2}'")
-        return None
+        return {"error_code": 404, "message": "Teams not found"}
 
     url = f"{BASE_URL}/fixtures/headtohead"
     params = {"h2h": f"{team_1_id}-{team_2_id}"}
@@ -74,8 +69,7 @@ def H2H_stats(team_1, team_2, league):
     response = requests.get(url, headers=headers, params=params)
     
     if response.status_code != 200:
-        print("Error fetching data")
-        return None
+        return {"error_code": response.status_code, "message": "Error fetching data"}
 
     data = response.json()
     fixtures = data.get("response", [])
@@ -120,8 +114,7 @@ def latest_H2H(team_1, team_2, league):
     team_2_id = get_team_id(team_2, league)
 
     if not team_1_id or not team_2_id:
-        print(f"Error: Could not find team IDs for '{team_1}' or '{team_2}' in '{league}'")
-        return None
+        return {"error_code": 404, "message": "Teams not found"}
 
     url = f"{BASE_URL}/fixtures/headtohead"
     params = {"h2h": f"{team_1_id}-{team_2_id}"}
@@ -129,15 +122,13 @@ def latest_H2H(team_1, team_2, league):
     response = requests.get(url, headers=headers, params=params)
 
     if response.status_code != 200:
-        print(f"Error fetching data: {response.status_code}, {response.text}")
-        return None
+        return {"error_code": response.status_code, "message": response.json().get("message")}
 
     data = response.json()
     fixtures = data.get("response", [])
 
     if not fixtures:
-        print(f"No recent matches found for '{team_1}' vs '{team_2}' in '{league}'")
-        return None
+        return {"error_code": 404, "message": "No fixtures found"}
 
     latest_match = fixtures[0]  # Get the most recent match
     match_id = latest_match["fixture"]["id"]
@@ -149,13 +140,11 @@ def latest_H2H(team_1, team_2, league):
     stats_response = requests.get(stats_url, headers=headers, params=stats_params)
 
     if stats_response.status_code != 200:
-        print(f"Error fetching statistics for fixture {match_id}")
-        return None
+        return {"error_code": stats_response.status_code, "message": stats_response.json().get("message")}
 
     stats_data = stats_response.json()
     if not stats_data.get("response"):
-        print(f"No statistics available for fixture {match_id}")
-        return None
+        return {"error_code": 404, "message": "No statistics found"}
 
     # Extract statistics
     team_1_stats = stats_data["response"][0]["statistics"]
@@ -211,8 +200,7 @@ def recent_matches(team_1, team_2, league, number_matches):
     team_2_id = get_team_id(team_2, league)
 
     if not team_1_id or not team_2_id:
-        print(f"Error: Could not find team IDs for '{team_1}' or '{team_2}'")
-        return {team_1: [], team_2: []}
+        return {"error_code": 404, "message": "Teams not found"}
 
     def get_team_matches(team_id, team_name):
         url = f"{BASE_URL}/fixtures"
@@ -224,15 +212,13 @@ def recent_matches(team_1, team_2, league, number_matches):
 
         response = requests.get(url, headers=headers, params=params)
         if response.status_code != 200:
-            print(f"Error fetching matches for {team_name}: {response.status_code}")
-            return []
+            return {"error_code": response.status_code, "message": response.json().get("message")}
 
         matches_data = response.json()
         matches = matches_data.get("response", [])
         
         if not matches:
-            print(f"No matches found for {team_name} in the 2023 season")
-            return []
+            return {"error_code": 404, "message": f"No matches found for {team_name}"}
             
         # Sort matches by date (newest first) and take last 3
         matches.sort(key=lambda x: x["fixture"]["date"], reverse=True)
@@ -248,8 +234,7 @@ def recent_matches(team_1, team_2, league, number_matches):
             
             stats_response = requests.get(stats_url, headers=headers, params=stats_params)
             if stats_response.status_code != 200:
-                print(f"Error fetching stats for match {match_id}: {stats_response.status_code}")
-                continue
+                return {"error_code": stats_response.status_code, "message": stats_response.json().get("message")}
 
             stats_data = stats_response.json()
             # Debug: Print the full stats_data to see its structure
@@ -257,8 +242,7 @@ def recent_matches(team_1, team_2, league, number_matches):
             print(stats_data)
             
             if not stats_data.get("response"):
-                print(f"No statistics available for match {match_id}")
-                continue
+                return {"error_code": 404, "message": f"No statistics found for match {match_id}"}
 
             # Debug: Print the teams data to verify we're getting the right teams
             home_stats = stats_data["response"][0]["statistics"]
@@ -328,7 +312,7 @@ def player_season_stats(player_name, team_name, league_name, season=2023):
     player_info = get_player_id(player_name, team_name, league_name, season)
     
     if not league_id or not player_info:
-        return None
+        return {"error_code": 404, "message": "Player or league not found"}
         
     player_id, player_name, position = player_info
     
@@ -342,13 +326,11 @@ def player_season_stats(player_name, team_name, league_name, season=2023):
     
     response = requests.get(url, headers=headers, params=params)
     if response.status_code != 200:
-        print(f"Error fetching player stats: {response.status_code}")
-        return None
+        return {"error_code": response.status_code, "message": response.json().get("message")}
         
     data = response.json()
     if not data["response"]:
-        print(f"No statistics found for player {player_name}")
-        return None
+        return {"error_code": 404, "message": "Player not found"}
         
     stats = data["response"][0]["statistics"][0]
     
@@ -449,13 +431,11 @@ def player_recent_matches(player_name, team_name, league_name, number_matches, s
     # First get league ID and player information
     league_id = get_league_id(league_name)
     if not league_id:
-        print(f"Error: Could not find league ID for '{league_name}'")
-        return None
+        return {"error_code": 404, "message": "League not found"}
     
     player_info = get_player_id(player_name, team_name, league_name, season)
     if not player_info:
-        print(f"Error: Could not find player ID for '{player_name}'")
-        return None
+        return {"error_code": 404, "message": "Player not found"}
         
     player_id, player_name, position = player_info
     team_id = get_team_id(team_name, league_name, season)
@@ -470,15 +450,13 @@ def player_recent_matches(player_name, team_name, league_name, number_matches, s
 
         response = requests.get(url, headers=headers, params=params)
         if response.status_code != 200:
-            print(f"Error fetching matches for {team_name}: {response.status_code}")
-            return []
+            return {"error_code": response.status_code, "message": response.json().get("message")}
 
         matches_data = response.json()
         matches = matches_data.get("response", [])
         
         if not matches:
-            print(f"No matches found for {team_name} in the {season} season")
-            return []
+            return {"error_code": 404, "message": f"No matches found for {team_name}"}
             
         matches.sort(key=lambda x: x["fixture"]["date"], reverse=True)
         matches = matches[:number_matches]
@@ -494,8 +472,7 @@ def player_recent_matches(player_name, team_name, league_name, number_matches, s
 
         stats_response = requests.get(stats_url, headers=headers, params=stats_params)
         if stats_response.status_code != 200:
-            print(f"Error fetching match stats: {stats_response.status_code}")
-            continue
+            return {"error_code": stats_response.status_code, "message": stats_response.json().get("message")}
 
         stats_data = stats_response.json()
         print(stats_data)
