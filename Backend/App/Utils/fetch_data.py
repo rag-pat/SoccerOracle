@@ -530,6 +530,3 @@ def player_recent_matches(player_name, team_name, league_name, number_matches, s
                     player_stats.append(match_stats)
 
     return player_stats
-
-
-print(player_recent_matches("Haaland", "Manchester City", "Premier League", 3))
