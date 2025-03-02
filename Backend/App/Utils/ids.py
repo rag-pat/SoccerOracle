@@ -1,6 +1,6 @@
 import requests
 from fuzzywuzzy import process
-from creds import api_key
+from .creds import api_key
 
 BASE_URL = "https://v3.football.api-sports.io"
 

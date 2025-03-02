@@ -1,8 +1,8 @@
 import requests
 from fuzzywuzzy import process
-from creds import api_key
+from .creds import api_key
 
-from ids import get_team_id, get_league_id, get_player_id, get_team_matches
+from .ids import get_team_id, get_league_id, get_player_id, get_team_matches
 
 BASE_URL = "https://v3.football.api-sports.io"
 
@@ -53,7 +53,6 @@ def league_standings():
                 ]
 
     return all_leagues
-
 
 def H2H_stats(team_1, team_2, league):
     """Fetch H2H stats between two teams."""
@@ -530,3 +529,5 @@ def player_recent_matches(player_name, team_name, league_name, number_matches, s
                     player_stats.append(match_stats)
 
     return player_stats
+
+print(player_recent_matches("Haaland", "Manchester City", "Premier League", 3))
