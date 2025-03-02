@@ -24,14 +24,11 @@ def get_league_id(league_name):
             # Get all league names and find best match
             choices = [l["league"]["name"] for l in leagues]
             best_match, _ = process.extractOne(league_name, choices)
-            print(f"League matched: {best_match}")
             return next(l["league"]["id"] for l in leagues if l["league"]["name"] == best_match)
         else:
-            print(f"No league found with name '{league_name}'")
-            return None
+            return {"error_code": response.status_code, "message": response.json().get("message")}
     else:
-        print(f"Error fetching leagues: {response.status_code}, {response.text}")
-        return None
+        return {"error_code": response.status_code, "message": response.json().get("message")}
 
 def get_team_id(team_name, league_name, season=2023):
     """Fetch team ID for a given team name."""
@@ -55,30 +52,25 @@ def get_team_id(team_name, league_name, season=2023):
             # Get all team names and find best match
             choices = [t["team"]["name"] for t in teams]
             best_match, _ = process.extractOne(team_name, choices)
-            print(f"Team matched: {best_match}")
             return next(t["team"]["id"] for t in teams if t["team"]["name"] == best_match)
         else:
-            print(f"No teams found in league '{league_name}'")
-            return None
+            return {"error_code": response.status_code, "message": response.json().get("message")}
     else:
-        print(f"Error fetching teams: {response.status_code}, {response.text}")
-        return None
+        return {"error_code": response.status_code, "message": response.json().get("message")}
 
 def get_player_id(player_name, team_name, league_name, season=2023):
     """Fetch player ID using team squad information."""
     team_id = get_team_id(team_name, league_name, season)
     
     if not team_id:
-        print(f"Error: Could not find team ID for '{team_name}'")
-        return None
+        return {"error_code": response.status_code, "message": response.json().get("message")}
         
     url = f"{BASE_URL}/players/squads"
     params = {"team": team_id}
     
     response = requests.get(url, headers=headers, params=params)
     if response.status_code != 200:
-        print(f"Error fetching squad data: {response.status_code}")
-        return None
+        return {"error_code": response.status_code, "message": response.json().get("message")}
         
     data = response.json()
     players = data["response"][0]["players"]
@@ -87,10 +79,8 @@ def get_player_id(player_name, team_name, league_name, season=2023):
     player_names = [p["name"] for p in players]
     best_match, score = process.extractOne(player_name, player_names)
     if score < 60:  # Threshold for matching
-        print(f"No close match found for player '{player_name}'")
-        return None
+        return {"error_code": response.status_code, "message": response.json().get("message")}
     
-    print(f"Player matched: {best_match}")
     player_data = next(p for p in players if p["name"] == best_match)
     return player_data["id"], best_match, player_data["position"]
 
