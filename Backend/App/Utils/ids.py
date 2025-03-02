@@ -93,3 +93,27 @@ def get_player_id(player_name, team_name, league_name, season=2023):
     print(f"Player matched: {best_match}")
     player_data = next(p for p in players if p["name"] == best_match)
     return player_data["id"], best_match, player_data["position"]
+
+
+def get_team_matches(team_id, team_name, season, number_matches):
+        url = f"{BASE_URL}/fixtures"
+        params = {
+            "team": team_id,
+            "season": season,
+            "status": "FT"  # Only finished matches
+        }
+
+        response = requests.get(url, headers=headers, params=params)
+        if response.status_code != 200:
+            return {"error_code": response.status_code, "message": response.json().get("message")}
+
+        matches_data = response.json()
+        matches = matches_data.get("response", [])
+        
+        if not matches:
+            return {"error_code": 404, "message": f"No matches found for {team_name}"}
+            
+        matches.sort(key=lambda x: x["fixture"]["date"], reverse=True)
+        matches = matches[:number_matches]
+        
+        return [match["fixture"]["id"] for match in matches]

@@ -2,7 +2,7 @@ import requests
 from fuzzywuzzy import process
 from creds import api_key
 
-from ids import get_team_id, get_league_id, get_player_id
+from ids import get_team_id, get_league_id, get_player_id, get_team_matches
 
 BASE_URL = "https://v3.football.api-sports.io"
 
@@ -237,18 +237,14 @@ def recent_matches(team_1, team_2, league, number_matches):
                 return {"error_code": stats_response.status_code, "message": stats_response.json().get("message")}
 
             stats_data = stats_response.json()
-            # Debug: Print the full stats_data to see its structure
-            print(f"\nStats data for match {match_id}:")
-            print(stats_data)
-            
+
             if not stats_data.get("response"):
                 return {"error_code": 404, "message": f"No statistics found for match {match_id}"}
 
             # Debug: Print the teams data to verify we're getting the right teams
             home_stats = stats_data["response"][0]["statistics"]
             away_stats = stats_data["response"][1]["statistics"]
-            print(f"\nHome team stats: {home_stats}")
-            print(f"Away team stats: {away_stats}")
+
             
             # Determine which team is the one we're looking for
             home_team = match["teams"]["home"]
@@ -267,8 +263,6 @@ def recent_matches(team_1, team_2, league, number_matches):
                 for stat in stats:
                     if stat["type"] == name:
                         value = stat["value"]
-                        # Debug: Print the stat being processed
-                        print(f"Processing stat {name}: {value}")
                         if value is None:
                             return 0
                         if isinstance(value, str) and value.endswith('%'):
@@ -439,31 +433,8 @@ def player_recent_matches(player_name, team_name, league_name, number_matches, s
         
     player_id, player_name, position = player_info
     team_id = get_team_id(team_name, league_name, season)
-
-    def get_team_matches(team_id, team_name):
-        url = f"{BASE_URL}/fixtures"
-        params = {
-            "team": team_id,
-            "season": season,
-            "status": "FT"  # Only finished matches
-        }
-
-        response = requests.get(url, headers=headers, params=params)
-        if response.status_code != 200:
-            return {"error_code": response.status_code, "message": response.json().get("message")}
-
-        matches_data = response.json()
-        matches = matches_data.get("response", [])
-        
-        if not matches:
-            return {"error_code": 404, "message": f"No matches found for {team_name}"}
-            
-        matches.sort(key=lambda x: x["fixture"]["date"], reverse=True)
-        matches = matches[:number_matches]
-        
-        return [match["fixture"]["id"] for match in matches]
     
-    team_matches = get_team_matches(team_id, team_name)
+    team_matches = get_team_matches(team_id, team_name, season, number_matches)
     player_stats = []
 
     for match_id in team_matches:
@@ -559,3 +530,6 @@ def player_recent_matches(player_name, team_name, league_name, number_matches, s
                     player_stats.append(match_stats)
 
     return player_stats
+
+
+print(player_recent_matches("Haaland", "Manchester City", "Premier League", 3))
