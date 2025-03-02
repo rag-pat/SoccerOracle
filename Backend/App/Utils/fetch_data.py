@@ -445,8 +445,7 @@ def player_recent_matches(player_name, team_name, league_name, number_matches, s
             return {"error_code": stats_response.status_code, "message": stats_response.json().get("message")}
 
         stats_data = stats_response.json()
-        print(stats_data)
-        # Find player stats in the response
+
         for team in stats_data.get("response", []):
             for player in team.get("players", []):
                 if player["player"]["id"] == player_id:
@@ -529,5 +528,3 @@ def player_recent_matches(player_name, team_name, league_name, number_matches, s
                     player_stats.append(match_stats)
 
     return player_stats
-
-print(player_recent_matches("Haaland", "Manchester City", "Premier League", 3))
