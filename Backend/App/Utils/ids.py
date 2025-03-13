@@ -42,7 +42,7 @@ def get_league_id(league_name):
     else:
         return {"error_code": response.status_code, "message": response.json().get("message")}
 
-def get_team_id(team_name, league_name, season=2023):
+def get_team_id(team_name, league_name, season=get_season_year()):
     """Fetch team ID for a given team name."""
     league_id = get_league_id(league_name)
     if not league_id:
@@ -70,7 +70,7 @@ def get_team_id(team_name, league_name, season=2023):
     else:
         return {"error_code": response.status_code, "message": response.json().get("message")}
 
-def get_player_id(player_name, team_name, league_name, season=2023):
+def get_player_id(player_name, team_name, league_name, season=get_season_year()):
     """Fetch player ID using team squad information."""
     team_id = get_team_id(team_name, league_name, season)
     

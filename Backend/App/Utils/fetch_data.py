@@ -2,7 +2,7 @@ import requests
 from fuzzywuzzy import process
 from .creds import api_key
 
-from .ids import get_team_id, get_league_id, get_player_id, get_team_matches
+from .ids import get_team_id, get_league_id, get_player_id, get_team_matches, get_season_year
 
 BASE_URL = "https://v3.football.api-sports.io"
 
@@ -16,10 +16,10 @@ def league_standings():
     url = f"{BASE_URL}/standings"
 
     leagues = {
-        "Premier League": {"league": "39", "season": "2023"},
-        "LaLiga": {"league": "140", "season": "2023"},
-        "SerieA": {"league": "135", "season": "2023"},
-        "Bundesliga": {"league": "78", "season": "2023"},
+        "Premier League": {"league": "39", "season": f"{get_season_year()}"},
+        "LaLiga": {"league": "140", "season": f"{get_season_year()}"},
+        "SerieA": {"league": "135", "season": f"{get_season_year()}"},
+        "Bundesliga": {"league": "78", "season": f"{get_season_year()}"},
     }
 
     all_leagues = {league: {"standings": []} for league in leagues}
@@ -205,7 +205,7 @@ def recent_matches(team_1, team_2, league, number_matches):
         url = f"{BASE_URL}/fixtures"
         params = {
             "team": team_id,
-            "season": 2023,
+            "season": get_season_year(),
             "status": "FT"  # Only finished matches
         }
 
@@ -299,7 +299,7 @@ def recent_matches(team_1, team_2, league, number_matches):
 
     return results
 
-def player_season_stats(player_name, team_name, league_name, season=2023):
+def player_season_stats(player_name, team_name, league_name, season=get_season_year()):
     """Fetch season statistics for a specific player."""
     league_id = get_league_id(league_name)
     player_info = get_player_id(player_name, team_name, league_name, season)
@@ -409,14 +409,14 @@ def player_season_stats(player_name, team_name, league_name, season=2023):
             }
         }
 
-def player_recent_matches(player_name, team_name, league_name, number_matches, season=2023):
+def player_recent_matches(player_name, team_name, league_name, number_matches, season=get_season_year()):
     """
     Get statistics for a player's last three games.
     
     Args:
         player_name (str): Name of the player
         league_name (str): Name of the league
-        season (int): Season year (default: 2023)
+        season (int): Season year (default is current year)
     
     Returns:
         list: List of player statistics for last three games or None if error occurs
