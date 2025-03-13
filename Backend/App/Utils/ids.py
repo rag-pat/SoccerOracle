@@ -1,6 +1,7 @@
 import requests
 from fuzzywuzzy import process
 from .creds import api_key
+from datetime import datetime
 
 BASE_URL = "https://v3.football.api-sports.io"
 
@@ -8,6 +9,17 @@ headers = {
     "x-rapidapi-key": api_key,
     "x-rapidapi-host": "v3.football.api-sports.io"
 }
+
+def get_season_year():
+    current_date = datetime.now()
+    year = current_date.year
+    month = current_date.month
+    
+    # If the month is from July (7) to December (12), return the next year
+    if month >= 7:
+        return year + 1
+    # Otherwise, return the current year
+    return year
 
 def get_league_id(league_name):
     """Fetch league ID for a specific league."""
