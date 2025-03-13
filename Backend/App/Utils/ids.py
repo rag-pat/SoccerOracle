@@ -17,9 +17,11 @@ def get_season_year():
     
     # If the month is from July (7) to December (12), return the next year
     if month >= 7:
-        return year + 1
+        return year
     # Otherwise, return the current year
-    return year
+    return year - 1
+
+print(get_season_year())
 
 def get_league_id(league_name):
     """Fetch league ID for a specific league."""
