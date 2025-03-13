@@ -54,8 +54,6 @@ def league_standings():
 
     return all_leagues
 
-print(league_standings())
-
 def H2H_stats(team_1, team_2, league):
     """Fetch H2H stats between two teams."""
     team_1_id = get_team_id(team_1, league)
