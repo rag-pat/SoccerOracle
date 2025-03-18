@@ -299,7 +299,7 @@ def recent_matches(team_1, team_2, league, number_matches):
 
     return results
 
-def player_season_stats(player_name, team_name, league_name, season=get_season_year()):
+def player_season_stats(player_name, team_name, league_name, season):
     """Fetch season statistics for a specific player."""
     league_id = get_league_id(league_name)
     player_info = get_player_id(player_name, team_name, league_name, season)
@@ -409,7 +409,7 @@ def player_season_stats(player_name, team_name, league_name, season=get_season_y
             }
         }
 
-def player_recent_matches(player_name, team_name, league_name, number_matches, season=get_season_year()):
+def player_recent_matches(player_name, team_name, league_name, number_matches, season):
     """
     Get statistics for a player's last three games.
     

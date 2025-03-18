@@ -9,5 +9,3 @@ class PlayerRequest(BaseModel):
     player_name: str
     team_name: str
     league_name: str
-    matches_number: int
-    season: int
