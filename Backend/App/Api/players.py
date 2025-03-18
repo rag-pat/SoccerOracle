@@ -20,5 +20,4 @@ async def get_player_recent(request: PlayerRequest):
         request.team_name,
         request.league_name,
         3,
-        request.season
     )
