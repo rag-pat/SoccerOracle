@@ -379,7 +379,9 @@ def player_season_stats(player_name, team_name, league_name, season):
             },
             "goals": {
                 "total": stats["goals"]["total"],
-                "assists": stats["goals"]["assists"]
+                "assists": stats["goals"]["assists"],
+                "totalshots": stats["shots"]["total"],
+                "shotsongoal": stats["shots"]["on"]
             },
             "passes": {
                 "total": stats["passes"]["total"],
@@ -496,7 +498,9 @@ def player_recent_matches(player_name, team_name, league_name, number_matches, s
                             },
                             "goals": {
                                 "total": stats["goals"].get("total", 0),
-                                "assists": stats["goals"].get("assists", 0)
+                                "assists": stats["goals"].get("assists", 0),
+                                "totalshots": stats["shots"].get("total", 0),
+                                "shotsongoal": stats["shots"].get("on", 0)
                             },
                             "passes": {
                                 "total": stats["passes"].get("total", 0),
