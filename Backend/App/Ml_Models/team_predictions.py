@@ -13,8 +13,8 @@ class TeamDataProcessor:
         self.h2h_latest = latest_H2H(team_name, opponent_name, league_name)
         self.recent_matches = recent_matches(team_name, opponent_name, league_name, 5)[team_name]
         
-    def prepare_goals_df(self):
-        return pd.DataFrame([{
+    def goals(self):
+        data = pd.DataFrame([{
             'goals_scored': self.extract_goals(m['score'], self.team_name),
             'goals_conceded': self.extract_goals(m['score'], m['opponent']),
             'shots_total': m['stats']['shots_total'],
@@ -24,8 +24,8 @@ class TeamDataProcessor:
             'passes_accuracy': m['stats']['passes_accuracy']
         } for m in self.recent_matches])
     
-    def prepare_shots_df(self):
-        return pd.DataFrame([{
+    def shots(self):
+        data = pd.DataFrame([{
             'shots_total': m['stats']['shots_total'],
             'shots_on_target': m['stats']['shots_on_target'],
             'shots_off_target': m['stats']['shots_off_target'],
@@ -33,30 +33,30 @@ class TeamDataProcessor:
             'passes_total': m['stats']['passes_total']
         } for m in self.recent_matches])
 
-    def prepare_fouls_df(self):
-        return pd.DataFrame([{
+    def fouls(self):
+        data = pd.DataFrame([{
             'fouls': m['stats']['fouls'],
             'yellow_cards': m['stats']['yellow_cards'],
             'red_cards': m['stats']['red_cards'],
             'ball_possession': float(m['stats']['ball_possession'].strip('%'))
         } for m in self.recent_matches])
 
-    def prepare_corners_df(self):
-        return pd.DataFrame([{
+    def corners(self):
+        data = pd.DataFrame([{
             'corners': m['stats']['corners'],
             'ball_possession': float(m['stats']['ball_possession'].strip('%')),
             'shots_total': m['stats']['shots_total']
         } for m in self.recent_matches])
 
-    def prepare_possession_df(self):
-        return pd.DataFrame([{
+    def possesion(self):
+        data = pd.DataFrame([{
             'ball_possession': float(m['stats']['ball_possession'].strip('%')),
             'passes_total': m['stats']['passes_total'],
             'passes_accuracy': m['stats']['passes_accuracy']
         } for m in self.recent_matches])
     
-    def prepare_passes_df(self):
-        return pd.DataFrame([{
+    def passes(self):
+        data = pd.DataFrame([{
             'passes_total': m['stats']['passes_total'],
             'passes_accuracy': m['stats']['passes_accuracy'],
             'ball_possession': float(m['stats']['ball_possession'].strip('%'))

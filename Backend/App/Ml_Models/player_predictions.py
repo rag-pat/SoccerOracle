@@ -18,8 +18,8 @@ class PlayerDataProcessor:
         print(self.recent_matches)
 
 
-    def prepare_goals_df(self):
-        return pd.DataFrame([{
+    def goals(self):
+        data = pd.DataFrame([{
             'minutes_played': m['games']['minutes_played'] or 0,
             'totalshots': m['goals']['totalshots'] or 0,
             'shotsongoal': m['goals']['shotsongoal'] or 0,
@@ -29,8 +29,8 @@ class PlayerDataProcessor:
             'goals_total': m['goals']['total'] or 0
         } for m in self.recent_matches])
 
-    def prepare_assists_df(self):
-        return pd.DataFrame([{
+    def assists(self):
+        data = pd.DataFrame([{
             'minutes_played': m['games']['minutes_played'] or 0,
             'passes_total': m['passes']['total'] or 0,
             'passes_accuracy': int(m['passes']['accuracy']) if m['passes']['accuracy'] else 0,
@@ -40,8 +40,8 @@ class PlayerDataProcessor:
             'assists': m['goals']['assists'] or 0
         } for m in self.recent_matches])
 
-    def prepare_dribbles_df(self):
-        return pd.DataFrame([{
+    def dribbles(self):
+        data = pd.DataFrame([{
             'dribbles_attempts': m['dribbles']['attempts'] or 0,
             'minutes_played': m['games']['minutes_played'] or 0,
             'totalshots': m['goals']['totalshots'] or 0,
@@ -50,8 +50,8 @@ class PlayerDataProcessor:
             'dribbles_success': m['dribbles']['success'] or 0
         } for m in self.recent_matches])
 
-    def prepare_passes_df(self):
-        return pd.DataFrame([{
+    def passes(self):
+        data = pd.DataFrame([{
             'minutes_played': m['games']['minutes_played'] or 0,
             'passes_accuracy': int(m['passes']['accuracy']) if m['passes']['accuracy'] else 0,
             'dribbles_attempts': m['dribbles']['attempts'] or 0,
@@ -60,8 +60,8 @@ class PlayerDataProcessor:
             'passes_total': m['passes']['total'] or 0
         } for m in self.recent_matches])
 
-    def prepare_tackles_df(self):
-        return pd.DataFrame([{
+    def tackels(self):
+        data = pd.DataFrame([{
             'minutes_played': m['games']['minutes_played'] or 0,
             'interceptions': m['tackles']['interceptions'] or 0,
             'dribbles_attempts': m['dribbles']['attempts'] or 0,
