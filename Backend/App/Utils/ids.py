@@ -21,8 +21,6 @@ def get_season_year():
     # Otherwise, return the current year
     return year - 1
 
-print(get_season_year())
-
 def get_league_id(league_name):
     """Fetch league ID for a specific league."""
     url = f"{BASE_URL}/leagues"
@@ -97,7 +95,6 @@ def get_player_id(player_name, team_name, league_name, season=get_season_year())
     
     player_data = next(p for p in players if p["name"] == best_match)
     return player_data["id"], best_match, player_data["position"]
-
 
 def get_team_matches(team_id, team_name, season, number_matches):
         url = f"{BASE_URL}/fixtures"
