@@ -240,11 +240,10 @@ def recent_matches(team_1, team_2, league, number_matches):
             if not stats_data.get("response"):
                 return {"error_code": 404, "message": f"No statistics found for match {match_id}"}
 
-            # Debug: Print the teams data to verify we're getting the right teams
+            # Get the teams data
             home_stats = stats_data["response"][0]["statistics"]
             away_stats = stats_data["response"][1]["statistics"]
 
-            
             # Determine which team is the one we're looking for
             home_team = match["teams"]["home"]
             away_team = match["teams"]["away"]
@@ -273,7 +272,7 @@ def recent_matches(team_1, team_2, league, number_matches):
                 "date": match["fixture"]["date"],
                 "opponent": opponent_team["name"],
                 "score": f"{our_score}-{opponent_score}",
-                "result": "W" if our_team["winner"] else ("L" if opponent_team["winner"] else "D"),
+                "result": "W" if our_team.get("winner") else ("L" if opponent_team.get("winner") else "D"),
                 "stats": {
                     "shots_total": get_stat(our_stats, "Total Shots"),
                     "shots_on_target": get_stat(our_stats, "Shots on Goal"),
@@ -453,80 +452,83 @@ def player_recent_matches(player_name, team_name, league_name, number_matches, s
                 if player["player"]["id"] == player_id:
                     stats = player["statistics"][0]
                     
+                    # Safely get minutes played with a default of 0
+                    minutes_played = stats.get("games", {}).get("minutes", 0) or 0
+                    
                     if position == "Goalkeeper":
                         match_stats = {
                             "games": {
-                                "appearances": 1 if stats["games"]["minutes"] > 0 else 0,
-                                "minutes_played": stats["games"]["minutes"]
+                                "appearances": 1 if minutes_played > 0 else 0,
+                                "minutes_played": minutes_played
                             },
                             "goals": {
-                                "conceded": stats["goals"].get("conceded", 0),
-                                "saves": stats["goals"].get("saves", 0)
+                                "conceded": stats.get("goals", {}).get("conceded", 0) or 0,
+                                "saves": stats.get("goals", {}).get("saves", 0) or 0
                             },
                             "passes": {
-                                "total": stats["passes"].get("total", 0),
-                                "key": stats["passes"].get("key", 0),
-                                "accuracy": stats["passes"].get("accuracy", 0)
+                                "total": stats.get("passes", {}).get("total", 0) or 0,
+                                "key": stats.get("passes", {}).get("key", 0) or 0,
+                                "accuracy": stats.get("passes", {}).get("accuracy", 0) or 0
                             },
                             "tackles": {
-                                "total": stats["tackles"].get("total", 0),
-                                "blocks": stats["tackles"].get("blocks", 0),
-                                "interceptions": stats["tackles"].get("interceptions", 0)
+                                "total": stats.get("tackles", {}).get("total", 0) or 0,
+                                "blocks": stats.get("tackles", {}).get("blocks", 0) or 0,
+                                "interceptions": stats.get("tackles", {}).get("interceptions", 0) or 0
                             },
                             "duels": {
-                                "total": stats["duels"].get("total", 0),
-                                "won": stats["duels"].get("won", 0)
+                                "total": stats.get("duels", {}).get("total", 0) or 0,
+                                "won": stats.get("duels", {}).get("won", 0) or 0
                             },
                             "dribbles": {
-                                "attempts": stats["dribbles"].get("attempts", 0),
-                                "success": stats["dribbles"].get("success", 0)
+                                "attempts": stats.get("dribbles", {}).get("attempts", 0) or 0,
+                                "success": stats.get("dribbles", {}).get("success", 0) or 0
                             },
                             "fouls": {
-                                "drawn": stats["fouls"].get("drawn", 0),
-                                "committed": stats["fouls"].get("committed", 0)
+                                "drawn": stats.get("fouls", {}).get("drawn", 0) or 0,
+                                "committed": stats.get("fouls", {}).get("committed", 0) or 0
                             },
                             "cards": {
-                                "yellow": stats["cards"].get("yellow", 0),
-                                "red": stats["cards"].get("red", 0)
+                                "yellow": stats.get("cards", {}).get("yellow", 0) or 0,
+                                "red": stats.get("cards", {}).get("red", 0) or 0
                             }
                         }
                     else:
                         match_stats = {
                             "games": {
-                                "appearances": 1 if stats["games"]["minutes"] > 0 else 0,
-                                "minutes_played": stats["games"]["minutes"]
+                                "appearances": 1 if minutes_played > 0 else 0,
+                                "minutes_played": minutes_played
                             },
                             "goals": {
-                                "total": stats["goals"].get("total", 0),
-                                "assists": stats["goals"].get("assists", 0),
-                                "totalshots": stats["shots"].get("total", 0),
-                                "shotsongoal": stats["shots"].get("on", 0)
+                                "total": stats.get("goals", {}).get("total", 0) or 0,
+                                "assists": stats.get("goals", {}).get("assists", 0) or 0,
+                                "totalshots": stats.get("shots", {}).get("total", 0) or 0,
+                                "shotsongoal": stats.get("shots", {}).get("on", 0) or 0
                             },
                             "passes": {
-                                "total": stats["passes"].get("total", 0),
-                                "key": stats["passes"].get("key", 0),
-                                "accuracy": stats["passes"].get("accuracy", 0)
+                                "total": stats.get("passes", {}).get("total", 0) or 0,
+                                "key": stats.get("passes", {}).get("key", 0) or 0,
+                                "accuracy": stats.get("passes", {}).get("accuracy", 0) or 0
                             },
                             "tackles": {
-                                "total": stats["tackles"].get("total", 0),
-                                "blocks": stats["tackles"].get("blocks", 0),
-                                "interceptions": stats["tackles"].get("interceptions", 0)
+                                "total": stats.get("tackles", {}).get("total", 0) or 0,
+                                "blocks": stats.get("tackles", {}).get("blocks", 0) or 0,
+                                "interceptions": stats.get("tackles", {}).get("interceptions", 0) or 0
                             },
                             "duels": {
-                                "total": stats["duels"].get("total", 0),
-                                "won": stats["duels"].get("won", 0)
+                                "total": stats.get("duels", {}).get("total", 0) or 0,
+                                "won": stats.get("duels", {}).get("won", 0) or 0
                             },
                             "dribbles": {
-                                "attempts": stats["dribbles"].get("attempts", 0),
-                                "success": stats["dribbles"].get("success", 0)
+                                "attempts": stats.get("dribbles", {}).get("attempts", 0) or 0,
+                                "success": stats.get("dribbles", {}).get("success", 0) or 0
                             },
                             "fouls": {
-                                "drawn": stats["fouls"].get("drawn", 0),
-                                "committed": stats["fouls"].get("committed", 0)
+                                "drawn": stats.get("fouls", {}).get("drawn", 0) or 0,
+                                "committed": stats.get("fouls", {}).get("committed", 0) or 0
                             },
                             "cards": {
-                                "yellow": stats["cards"].get("yellow", 0),
-                                "red": stats["cards"].get("red", 0)
+                                "yellow": stats.get("cards", {}).get("yellow", 0) or 0,
+                                "red": stats.get("cards", {}).get("red", 0) or 0
                             }
                         }
                     player_stats.append(match_stats)
