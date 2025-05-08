@@ -19,15 +19,11 @@ class PlayerDataProcessor:
             get_season_year()
         )
 
-        print(self.recent_matches)
-
-
     def _train_model(self, df, target_col, model_type='xgb'):
         x = df.drop(columns=[target_col])
         y = df[target_col]
 
         if df.shape[0] < 2:
-            print(f"Not enough data to train the model for {target_col}")
             return None
 
         # Use the first sample as a test case
@@ -53,12 +49,6 @@ class PlayerDataProcessor:
                 "predicted": round(float(y_pred[0]))
             }
         }
-
-        # Print results for visibility
-        print(f"\n----- {target_col.upper()} [{model_type}] -----")
-        print(f"Test MSE: {mse:.4f}")
-        for key, pred in predictions.items():
-            print(f"Actual: {pred['actual']}, Predicted: {pred['predicted']}")
 
         return predictions
 
