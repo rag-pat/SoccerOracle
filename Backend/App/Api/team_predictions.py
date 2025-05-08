@@ -8,33 +8,33 @@ router = APIRouter(prefix="/team_predictions", tags=["team_predictions"])
 @router.post("/predict")
 async def get_team_predictions(request: TeamsRequest):
     try:
-        data = TeamDataProcessor(
-            team_name=request.team1,
-            opponent_name=request.team2,
+        data_team1 = TeamDataProcessor(
+            team_name=request.team_1,
+            opponent_name=request.team_2,
             league_name=request.league
         )
-        
-        # Get all predictions first to avoid multiple API calls
-        shots_predictions = data.train_shots_model()
-        possession_prediction = data.train_possession_model()
-        passes_predictions = data.train_passes_model()
-        fouls_prediction = data.train_fouls_model()
+        data_team2 = TeamDataProcessor(
+            team_name=request.team_2,
+            opponent_name=request.team_1,
+            league_name=request.league
+        )
 
-        if not all([shots_predictions, possession_prediction, passes_predictions, fouls_prediction]):
-            raise HTTPException(status_code=404, detail="Not enough data to make predictions")
-
-        return {
-            "shots": {
-                "total": shots_predictions['total']['0'] if shots_predictions else None,
-                "on_target": shots_predictions['on_target']['0'] if shots_predictions else None,
-                "off_target": shots_predictions['off_target']['0'] if shots_predictions else None
+        predictions = {
+            request.team_1: {
+                "shots": data_team1.train_shots_model(),
+                "possession": data_team1.train_possession_model(),
+                "passes": data_team1.train_passes_model(),
+                "fouls": data_team1.train_fouls_model()
             },
-            "possession": possession_prediction['0'] if possession_prediction else None,
-            "passes": {
-                "total": passes_predictions['total']['0'] if passes_predictions else None,
-                "accuracy": passes_predictions['accuracy']['0'] if passes_predictions else None
-            },
-            "fouls": fouls_prediction['0'] if fouls_prediction else None
+            request.team_2: {
+                "shots": data_team2.train_shots_model(),
+                "possession": data_team2.train_possession_model(),
+                "passes": data_team2.train_passes_model(),
+                "fouls": data_team2.train_fouls_model()
+            }
         }
+
+        return predictions
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

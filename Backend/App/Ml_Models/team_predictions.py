@@ -29,12 +29,11 @@ class TeamDataProcessor:
             5
         )
 
-    def _train_model(self, df, target_col, model_type='xgb'):
+    def _train_model(self, df, target_col, model_type='xgb', label=None):
         x = df.drop(columns=[target_col])
         y = df[target_col]
 
         if df.shape[0] < 2:
-            print(f"Not enough data to train the model for {target_col}")
             return None
 
         # Use the first sample as a test case
@@ -54,16 +53,11 @@ class TeamDataProcessor:
         mse = mean_squared_error(y_test, y_pred)
 
         predictions = {
-            "0": {
+            label or "0": {
                 "actual": int(y_test.values[0]),
                 "predicted": round(float(y_pred[0]))
             }
         }
-
-        print(f"\n----- {target_col.upper()} [{model_type}] -----")
-        print(f"Test MSE: {mse:.4f}")
-        for key, pred in predictions.items():
-            print(f"Actual: {pred['actual']}, Predicted: {pred['predicted']}")
 
         return predictions
 
@@ -109,22 +103,22 @@ class TeamDataProcessor:
     def train_shots_model(self):
         df = self.prepare_shots_df()
         return {
-            'total': self._train_model(df, target_col='shots_total', model_type='xgb'),
-            'on_target': self._train_model(df, target_col='shots_on_target', model_type='xgb'),
-            'off_target': self._train_model(df, target_col='shots_off_target', model_type='xgb')
+            'total': self._train_model(df, target_col='shots_total', model_type='xgb', label=self.team_name),
+            'on_target': self._train_model(df, target_col='shots_on_target', model_type='xgb', label=self.team_name),
+            'off_target': self._train_model(df, target_col='shots_off_target', model_type='xgb', label=self.team_name)
         }
 
     def train_possession_model(self):
         df = self.prepare_possession_df()
-        return self._train_model(df, target_col='ball_possession', model_type='linear')
+        return self._train_model(df, target_col='ball_possession', model_type='linear', label=self.team_name)
 
     def train_passes_model(self):
         df = self.prepare_passes_df()
         return {
-            'total': self._train_model(df, target_col='passes_total', model_type='linear'),
-            'accuracy': self._train_model(df, target_col='passes_accuracy', model_type='linear')
+            'total': self._train_model(df, target_col='passes_total', model_type='linear', label=self.team_name),
+            'accuracy': self._train_model(df, target_col='passes_accuracy', model_type='linear', label=self.team_name)
         }
 
     def train_fouls_model(self):
         df = self.prepare_fouls_df()
-        return self._train_model(df, target_col='fouls', model_type='linear')
+        return self._train_model(df, target_col='fouls', model_type='linear', label=self.team_name)
