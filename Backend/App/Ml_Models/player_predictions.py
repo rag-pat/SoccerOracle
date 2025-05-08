@@ -52,8 +52,6 @@ class PlayerDataProcessor:
 
         return predictions
 
-
-
     def prepare_goals_df(self):
         return pd.DataFrame([{
             'minutes_played': m['games']['minutes_played'] or 0,
@@ -106,9 +104,6 @@ class PlayerDataProcessor:
             'tackles_total': m['tackles']['total'] or 0
         } for m in self.recent_matches])
     
-
-
-
     def train_goals_model(self):
         df = self.prepare_goals_df()
         return self._train_model(df, target_col='goals_total', model_type='xgb')
